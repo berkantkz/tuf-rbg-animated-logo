@@ -13,6 +13,46 @@
     <meta name="author" content="berkantkz">
 
     <style>
+        * {
+            user-select: none !important;
+        }
+
+        .dark {
+            background: #000;
+            color: #fff;
+        }
+
+        .light {
+            background: #d3d3d3;
+            color: #000;
+        }
+
+        .visibile {
+            visibility: visible;
+        }
+
+        .hidden {
+            visibility: hidden;
+        }
+
+        .static {
+            animation-name: static !important;
+        }
+
+        .breathing {
+            animation-name: breathing !important;
+            animation-duration: 2s !important;
+        }
+
+        .strobbing {
+            animation-name: strobbing !important;
+            animation-duration: .325s !important;
+        }
+
+        .colorCycle {
+            animation-name: colorCycle !important;
+        }
+
         body,
         html {
             margin: 0;
@@ -20,6 +60,7 @@
             background: #000;
             height: 100%;
             width: 100%;
+            accent-color: rgb(245, 222, 179);
         }
 
         .logo {
@@ -31,14 +72,18 @@
         }
 
         .logo svg {
-            animation-name: backgroundColorPalette;
+            fill: red;
+            animation-name: colorCycle;
             animation-duration: 8s;
             animation-iteration-count: infinite;
             animation-direction: alternate;
             animation-timing-function: linear;
+            stroke: none;
+            stroke-width: 0;
+            transform: scale(1);
         }
 
-        @keyframes backgroundColorPalette {
+        @keyframes colorCycle {
             0% {
                 fill: red;
             }
@@ -63,8 +108,55 @@
                 fill: pink;
             }
         }
+
+        @keyframes static {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes breathing {
+            0% {
+                opacity: 100%;
+            }
+
+            100% {
+                opacity: 0%;
+            }
+        }
+
+        @keyframes strobbing {
+            0% {
+                opacity: 10%;
+            }
+
+            100% {
+                opacity: 100%;
+            }
+        }
+
+        .controllers {
+            position: absolute;
+            top: 10;
+            right: 10;
+            display: none;
+            flex-direction: column;
+            text-align: right;
+        }
+
+        .controllers .modes {
+            display: grid;
+        }
+
+        .controllers .backgrounds {
+            display: grid;
+        }
     </style>
-    
+
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117578942-3"></script>
     <script>
@@ -75,14 +167,102 @@
         gtag('config', 'UA-117578942-3');
     </script>
 
+    <script src="jquery-3.6.0.min.js"></script>
 </head>
 
-<body>
+<body class="dark">
+    <div class="controllers">
+        <div>
+            <span>Logo size</span>
+            <div>
+                <label for="size">Size</label>
+                <input name="size" type="range" min="0.5" max="2" step="0.5"
+                    onchange="logo.css('transform', 'scale(' + this.value + ')')" />
+            </div>
+        </div>
+        <div class="modes">
+            <span>Mode</span>
+            <div>
+                <label for="static">Static</label>
+                <input id="static" type="radio" name="mode" title="Static"
+                    onchange="logo.removeClass(); logo.toggleClass('static'); ; $('.colors').removeClass('hidden'); $('.colors').addClass('visible'); $('.speeds').removeClass('visible'); $('.speeds').addClass('hidden')" />
+            </div>
+
+            <div>
+                <label for="breathing">Breathing</label>
+                <input id="breathing" type="radio" name="mode" title="Breathing"
+                    onchange="logo.removeClass(); logo.toggleClass('breathing'); $('.colors').removeClass('hidden'); $('.colors').addClass('visible'); $('.speeds').removeClass('hidden'); $('.speeds').addClass('visible')" />
+            </div>
+
+            <div>
+                <label for="strobbing">Strobbing</label>
+                <input id="strobbing" type="radio" name="mode" title="Strobbing"
+                    onchange="logo.removeClass(); logo.toggleClass('strobbing'); $('.colors').removeClass('hidden'); $('.colors').addClass('visible'); $('.speeds').removeClass('visible'); $('.speeds').addClass('hidden')" />
+            </div>
+
+            <div>
+                <label for="cycle">Color cycle</label>
+                <input id="cycle" type="radio" name="mode" title="Color cycle"
+                    onchange="logo.removeClass(); logo.toggleClass('colorCycle'); $('.colors').removeClass('visible'); $('.colors').addClass('hidden'); $('.speeds').removeClass('hidden'); $('.speeds').addClass('visible')"
+                    checked />
+            </div>
+        </div>
+
+        <div class="colors hidden">
+            <label for="color">Logo color</label>
+            <input id="color" type="color" value="logo.css('color')"
+                onchange="logo.css('fill', this.value)" />
+        </div>
+
+        <div class="speeds visible">
+            <label for="speed">Speed</label>
+            <input id="speed" min="1" max="3" value="2" type="range"
+                onchange="logo.css('animation-duration', this.value + 's !important');" />
+        </div>
+
+        <div class="backgrounds">
+            <span>Background</span>
+            <div>
+                <label for="background-light">Light</label>
+                <input id="background-light" type="radio" name="background" title="Light"
+                    onchange="$('body').removeClass('dark'); $('body').addClass('light')" />
+            </div>
+
+            <div>
+                <label for="background-dark">Dark</label>
+                <input id="background-dark" type="radio" name="background" title="Dark"
+                    onchange="$('body').removeClass('light'); $('body').addClass('dark')" checked />
+            </div>
+
+            <div class="strokes">
+
+                <div>
+                    <label for="stroke" title="Stroke">Stroke</label>
+                    <input name="stroke" type="checkbox"
+                        onchange="$('#strokeColorPicker').removeClass(); if($(this)[0].checked) {$('#strokeColorPicker').addClass('visible'); logo.css('stroke', '#fff')} else {$('#strokeColorPicker').addClass('hidden'); logo.css('stroke', '#0000')}" />
+                </div>
+
+                <div class="hidden" id="strokeColorPicker">
+                    <div>
+                        <label for="strokeColor">Stroke color</label>
+                        <input name="strokeColor" type="color" onchange="logo.css('stroke', this.value)" />
+                    </div>
+
+                    <div>
+                        <label for="strokeWidth">Stroke width</label>
+                        <input name="strokeWidth" type="range" min="1" max="16" value="5"
+                            onchange="logo.css('stroke-width', this.value + 'px')" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
     <div class="logo">
         <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="203.000000pt" height="130.000000pt"
             viewBox="0 0 203.000000 130.000000" preserveAspectRatio="xMidYMid meet">
 
-            <g transform="translate(0.000000,130.000000) scale(0.100000,-0.100000)" stroke="none">
+            <g transform="translate(0.000000,130.000000) scale(0.100000,-0.100000)">
                 <path d="M76 1249 c-19 -51 -13 -97 25 -171 28 -55 24 -57 -25 -9 -51 50 -51
 49 -61 -67 -7 -80 -7 -82 25 -134 19 -29 47 -68 64 -85 36 -40 27 -42 -30 -8
 l-43 25 16 -52 c28 -97 80 -183 169 -279 l52 -57 7 36 c14 76 58 126 120 138
@@ -111,6 +291,18 @@ l23 -21 0 34 c0 39 -25 208 -31 212 -2 2 -30 8 -62 15 -185 37 -361 206 -443
         </svg>
 
     </div>
+
+    <script>
+        var logo = $('.logo svg');
+        var controllers = $('.controllers');
+        $('.logo svg').mousedown(function (e) {
+            if (e.which == 1) {
+                var s = controllers.css('display');
+                s == 'none' ? controllers.css('display', 'flex') : controllers.css('display', 'none');
+            }
+        });
+    </script>
+
 </body>
 
 </html>
